@@ -1,4 +1,4 @@
-This repository consists of all the analysis performed for the findings in manuscript: "A distinct monocyte cellular state links systemic immune dysregulation to pulmonary impairment in long COVID".
+This repository consists of all the analysis performed for the findings in manuscript: **"A distinct monocyte cellular state links systemic immune dysregulation to pulmonary impairment in long COVID".**
 
 All the analysis was performed using Seurat version 5 and Signac version 1.13. 
 The scripts are organized in different folders, based on the analysis performed:
