@@ -18,7 +18,7 @@ nk_pb = nk_pb$RNA
 Mono_pb = Mono_pb$RNA
 
 
-REACTOME_genesets = getGmt('/home/skumar/bulkRNAseq-influenza/analysis/filesForGSEA/c2.cp.reactome.v7.5.1.symbols.gmt')
+REACTOME_genesets = getGmt('/analysis/filesForGSEA/c2.cp.reactome.v7.5.1.symbols.gmt')
 reactPathways = names(REACTOME_genesets)
 reactPathwaysTOKeep = reactPathways[grepl("TOLL",reactPathways)]
 reactPathwaysTOKeep = append(reactPathwaysTOKeep,reactPathways[grepl("ZBP1",reactPathways)])
@@ -28,7 +28,7 @@ reactPathwaysTOKeep = append(reactPathwaysTOKeep,reactPathways[grepl("SIGNALING_
 reactPathwaysTOKeep = reactPathwaysTOKeep[c(1:4,6:7,9)]
 REACTOME_genesets = subset(REACTOME_genesets,names(REACTOME_genesets) %in% reactPathwaysTOKeep)
 
-HALLMARK_genesets = getGmt("/vol/projects/skumar/LongCovid/freeze2Data_workingAnalysis2/h.all.v2022.1.Hs.symbols.gmt")
+HALLMARK_genesets = getGmt("/freeze2Data_workingAnalysis2/h.all.v2022.1.Hs.symbols.gmt")
 HM_pathways = names(HALLMARK_genesets)
 HM_pathwaysTOKeep = HM_pathways[grepl("TGF_BETA",HM_pathways)]
 HM_pathwaysTOKeep = append(HM_pathwaysTOKeep,HM_pathways[grepl("TNFA",HM_pathways)])
@@ -65,3 +65,35 @@ pathwaysAUC = function(pseudobulkFile,cellType){
 cd8TFileFinal = pathwaysAUC(cd8T_pb,cd8T)
 nkFileFinal = pathwaysAUC(nk_pb,nkCells)
 monoFileFinal = pathwaysAUC(Mono_pb,cd14Mono)
+
+##### plotting both statistics####
+p <- ggplot(monoToPlotMain, aes(x = as.numeric(FA_Score), y = value)) +
+  geom_point(aes(col = Recov_LC)) +
+  geom_smooth(method = "lm", se = TRUE) +
+  facet_wrap(~ variable, scales = "free", labeller = label_wrap_gen(width = 30)) +
+  scale_color_manual(values = c("darkred","firebrick2","cyan")) +
+  theme_classic() + labs(x = "", y = "")+
+  theme(plot.title = element_text(hjust = 0.5),legend.position = "none",
+        strip.text = element_text(size = 10,color = "black"),
+        axis.text.x = element_text(size = 10),
+        strip.background = element_rect(colour = "black",fill = "transparent",linetype = "solid", size = 0.5),
+        panel.border = element_rect(colour = "black",fill = "transparent",linetype = "solid", size = 0.5))
+
+# 1) All data
+p <- p + stat_cor(
+  method = "spearman",
+  output.type = "text",                        # <-- key change
+  label.x.npc = "left", label.y.npc = 0.95,
+  aes(label = paste("P&R:", after_stat(r.label), ",", after_stat(p.label))),
+  color = "dodgerblue"
+)
+
+# 2) Excluding R_Recov (still plotting all points)
+p <- p + stat_cor(
+  data = subset(monoToPlotMain, Recov_LC != "R_Recov"),
+  method = "spearman",
+  output.type = "text",                        # <-- key change
+  label.x.npc = "left", label.y.npc = 0.85,
+  aes(label = paste("P:", after_stat(r.label), ",", after_stat(p.label))),
+  color = "indianred2"
+)
